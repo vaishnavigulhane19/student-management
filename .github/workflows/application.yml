@@ -14,73 +14,73 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # steps:
-    #   - name: Checkout Code
-    #     uses: actions/checkout@v5
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
 
-    #   - name: Setup Java
-    #     uses: actions/setup-java@v5
-    #     with:
-    #       distribution: temurin 
-    #       java-version: '21'
-    #       cache: maven
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin 
+          java-version: '21'
+          cache: maven
 
-    #   - name: Build Application
-    #     run: mvn clean package
+      - name: Build Application
+        run: mvn clean package
 
-    #   - name: Configure aws credentials
-    #     uses: aws-actions/configure-aws-credentials@v5
-    #     with:
-    #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #       aws-region: ap-south-1
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
 
-    #   - name: Push Artifacts to S3
-    #     run: aws s3 cp target/*.war s3://deploywithnavi.space
+      - name: Push Artifacts to S3
+        run: aws s3 cp target/*.war s3://deploywithnavi.space
 
-    #   - name: SonarQube Analysis 
-    #     env:
-    #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-    #     run: |
-    #       mvn sonar:sonar \
-    #         -Dsonar.token="$SONAR_TOKEN" \
-    #         -Dsonar.host.url="$SONAR_HOST_URL"
+      - name: SonarQube Analysis 
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.token="$SONAR_TOKEN" \
+            -Dsonar.host.url="$SONAR_HOST_URL"
 
-    #   - name: SonarQube Quality Gates
-    #     run: |
-    #       STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-    #         "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=com.school:student-management" \
-    #         | jq -r '.projectStatus.status')
-    #       echo "Quality Gate: $STATUS"
-    #       [ "$STATUS" = "OK" ] || exit 1
+      - name: SonarQube Quality Gates
+        run: |
+          STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=com.school:student-management" \
+            | jq -r '.projectStatus.status')
+          echo "Quality Gate: $STATUS"
+          [ "$STATUS" = "OK" ] || exit 1
 
-    #   - name: Docker Build
-    #     run: |
-    #       docker build -t student .
-    #       docker images
+      - name: Docker Build
+        run: |
+          docker build -t student .
+          docker images
 
-    #   - name: Trivy Install 
-    #     run: |
-    #       sudo apt-get update
-    #       sudo apt-get install -y wget 
-    #       wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
-    #         gpg --dearmor | \
-    #         sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-    #       echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | \
-    #         sudo tee /etc/apt/sources.list.d/trivy.list
-    #       sudo apt-get update
-    #       sudo apt-get install -y trivy
+      - name: Trivy Install 
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget 
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+            gpg --dearmor | \
+            sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | \
+            sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
 
 
-    #   - name: Scann image using Trivy
-    #     run: trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 student:latest
+      - name: Scann image using Trivy
+        run: trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 student:latest
 
-    #   - name: Push to ECR
-    #     run: |
-    #       aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 262349351040.dkr.ecr.ap-south-1.amazonaws.com
-    #       docker tag student:latest 262349351040.dkr.ecr.ap-south-1.amazonaws.com/student:latest
-    #       docker push 262349351040.dkr.ecr.ap-south-1.amazonaws.com/student:latest
+      - name: Push to ECR
+        run: |
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 262349351040.dkr.ecr.ap-south-1.amazonaws.com
+          docker tag student:latest 262349351040.dkr.ecr.ap-south-1.amazonaws.com/student:latest
+          docker push 262349351040.dkr.ecr.ap-south-1.amazonaws.com/student:latest
 
       - name: Install Kubectl
         uses: azure/setup-kubectl@v5
